@@ -93,24 +93,38 @@ if (args.quiet and (not args.verbose) and not (args.update or args.tag)):
     print ('shatag: Warning: this combination of flags does not do anything.', file=sys.stderr)
     exit(1)
 
+unsupported = False
 for filename in args.files:
 
     if not os.path.isfile(filename):
         print ('shatag: Warning: {0} is not a file'.format(filename), file=sys.stderr)
         continue
 
-    file = ShatagFile(filename)
-    if args.verbose:
-        file.verbose()
+    try:
+        file = ShatagFile(filename)
+        if args.verbose:
+            file.verbose()
 
-    if args.force and (args.update or args.tag):
-        file.rehash()
+        if args.force and (args.update or args.tag):
+            file.rehash()
 
-    if args.update:
-        file.update()
+        if args.update:
+            file.update()
 
-    if args.tag:
-        file.tag()
+        if args.tag:
+            file.tag()
 
-    if not args.quiet:
-        file.show()
+        if not args.quiet:
+            file.show()
+
+    except IOError as e:
+        print ('shatag: "{0}": IOError {1}: {2}'.format(filename, e.errno, e.strerror), file=sys.stderr) 
+        if e.errno == 95:
+            unsupported = True
+
+    except Exception as e:
+        print ('shatag: "{0}": {1}'.format(filename,e), file=sys.stderr)
+
+    if unsupported:
+            print ('shatag: Did you forget to enable user_xattr ?', file=sys.stderr)
+            exit(4)
