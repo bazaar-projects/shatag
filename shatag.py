@@ -7,7 +7,6 @@ import hashlib
 import os
 import os.path
 import socket
-import sqlite3
 import sys
 import yaml
 import xattr
@@ -100,14 +99,23 @@ class Store:
 
     def __init__(self, url=None, name=None):
 
+        if name is None:
+            name = chost()            
+        self.name = name
+
         if url is None:
             url = '{0}/.shatagdb'.format(os.environ['HOME'])
 
-        if name is None:
-            name = chost()            
+        db = None
 
-        self.name = name
-        db = sqlite3.connect(url)
+        if url.startswith('pg:'):
+            import postgresql.driver.dbapi20 as pg_driver
+            l = url.split(':')
+            db = pg_driver.connect(host=l[1],user=l[2],password=l[3])
+        else:
+            import sqlite3
+            db = sqlite3.connect(url)
+
         self.db = db
 
         cursor = self.db.cursor()
