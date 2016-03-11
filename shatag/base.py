@@ -91,6 +91,19 @@ class IFile(object):
         if self.state == 'bad':
             self.fsprint('<outdated>  {0}'.format(self.path(canonical)), file=sys.stderr)
 
+    def scrub(self, canonical=False):
+        """Rehash the file and store new checksum and timestamp for uncorrupted
+        files only and report about corrupted files"""
+        self.ts = self.mtime
+        newsum = hashfile(self.filename)
+        if self.state == 'good' and newsum != self.shatag:
+            self.fsprint('<invalid>  {0}'.format(self.path(canonical)), file=sys.stderr)
+            print(' tag says: '+self.shatag, file=sys.stderr)
+            print(' got     : '+newsum, file=sys.stderr)
+        else:
+            self.shatag = newsum
+            self.write()
+            self.state = 'good'
 
     def rehash(self, canonical=False):
         """Rehash the file and store the new checksum and timestamp"""
