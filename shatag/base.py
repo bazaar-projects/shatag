@@ -82,6 +82,8 @@ class IFile(object):
             raise NoChecksum()
 
     def fsprint(self, s, file=sys.stdout, end='\n'):
+        """Print a string containing a filename, ensuring portable behaviour
+           when the file name is not valid in the current locale encoding,"""
         file.buffer.write(os.fsencode(s + end))
 
     def verbose(self, canonical=False):
