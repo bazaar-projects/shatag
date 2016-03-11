@@ -7,7 +7,7 @@ shatag - tag files with their SHA-256 checksums
 .SH SYNOPSIS
 .B shatag
 .nh
-[\fB\-fhlLqrtuv0\fR]
+[\fB\-fhlLqrstuv0\fR]
 [\fB\-d \fIDATABASE\fR]
 [\fB\-n \fINAME\fR]
 [\fB\-R \fINAME\fR]...
@@ -57,8 +57,8 @@ When running with
 .B -t
 or
 .B -u
-, recompute the checksum even if the file modification time has not changed. If the old
-checksum differs, report the file as corrupted.
+, force recompute the checksum and overwrite the old one, even if the timestamp indicates
+a good checksum.
 
 .IP "\fB\-h, \-\-help\fP"
 Displays the help message
@@ -98,6 +98,10 @@ When using
 or
 .B \-L
 , This is used to restrict the set of remote names to consider. If present, other storages will be ignored.
+
+.IP "\fB\-s, \-\-scrub\fP"
+Recompute the checksum even if the timestamp indicates it would not be needed, and report inconsistencies.
+Useful to detect silent corruption.
 
 .IP "\fB\-t, \-\-tag\fP"
 Compute new checksums for files that don't have one, or when it is outdated.

@@ -43,6 +43,7 @@ class IFile(object):
 
         self.ts = None
         self.shatag = None
+        self.hash = None
 
         self.read()
 
@@ -64,15 +65,15 @@ class IFile(object):
         else:
             return self.filename
 
-    def update(self):
+    def update(self, **kw):
         """Rehash the file only if there is an existing, outdated hash"""
         if self.state == 'bad': 
-            self.rehash()
+            self.rehash(**kw)
 
-    def tag(self):
+    def tag(self, **kw):
         """Rehash the file if there is an outated hash or no hash at all"""
         if self.state == 'missing' or self.state == 'bad':
-            self.rehash()
+            self.rehash(**kw)
 
     def show(self, canonical=False):
         """Show the hash and filename in sha256(1) compatible format"""
@@ -96,23 +97,18 @@ class IFile(object):
     def scrub(self, canonical=False):
         """Rehash the file and store new checksum and timestamp for uncorrupted
         files only and report about corrupted files"""
-        self.ts = self.mtime
-        newsum = hashfile(self.filename)
-        if self.state == 'good' and newsum != self.shatag:
-            self.fsprint('<invalid>  {0}'.format(self.path(canonical)), file=sys.stderr)
-            print(' tag says: '+self.shatag, file=sys.stderr)
-            print(' got     : '+newsum, file=sys.stderr)
-        else:
-            self.shatag = newsum
-            self.write()
-            self.state = 'good'
+        self.rehash(canonical, True)
 
-    def rehash(self, canonical=False):
+    def rehash(self, canonical=False, scrub=False):
         """Rehash the file and store the new checksum and timestamp"""
         self.ts = self.mtime
         newsum = hashfile(self.filename)
         if self.state == 'good' and newsum != self.shatag:
-            self.fsprint('<invalid>  {0}'.format(self.path(canonical)), file=sys.stderr)
+            self.fsprint('<invalid>  {0}\t{1}\t{2}'.format(self.path(canonical),
+                self.shatag, newsum), file=sys.stderr)
+            if scrub:
+                return
+
         self.shatag = newsum
         self.write()
         self.state = 'good'
