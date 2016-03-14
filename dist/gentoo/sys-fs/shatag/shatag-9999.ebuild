@@ -17,7 +17,6 @@ KEYWORDS="~amd64"
 IUSE=""
 
 DEPEND="dev-python/pyxattr
-	    dev-python/argparse
 		dev-python/pyyaml
         dev-lang/python[sqlite]"
 RDEPEND="${DEPEND}"
