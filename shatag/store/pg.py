@@ -17,7 +17,8 @@ class PgStore(shatag.base.SQLStore):
         super(PgStore,self).__init__(url, name)
 
         try:
-            cursor.execute('create table contents(hash varchar(64), name varchar(50), path varchar(100), primary key (name, path))')
+            cursor.execute(
+                'create table contents(hash varchar(64), size bigint, name varchar(50), path varchar(100), primary key (name, path))')
             cursor.execute('create index content_hash on contents(hash)')
         except psycopg2.ProgrammingError:
             db.rollback()
@@ -30,12 +31,12 @@ class PgStore(shatag.base.SQLStore):
         return self.cursor.rowcount
 
 
-    def record(self, name, path, tag):
-        d = {'name': name, 'path': path, 'tag':tag }
+    def record(self, name, path, size, tag):
+        d = {'name': name, 'path': path, 'size': size, 'tag':tag }
         self.cursor.execute('delete from contents where name = %(name)s and path = %(path)s', d)
-        self.cursor.execute('insert into contents(hash,name,path) values(%(tag)s,%(name)s,%(path)s)', d)
+        self.cursor.execute('insert into contents(hash,size,name,path) values(%(tag)s,%(size)s,%(name)s,%(path)s)', d)
 
     def fetch(self,hash):
         self.cursor.execute('select name,path from contents where hash = %(hash)s', {'hash':hash})
-        return self.cursor 
+        return self.cursor
 

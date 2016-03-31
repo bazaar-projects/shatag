@@ -78,7 +78,7 @@ will rather compute unneccesary checksums than consider an old checksum valid.
 
 The local sqlite database contains a single table:
   
-        create table contents(hash text, name text, path text, primary key (hash,name,path));
+        create table contents(hash text, size integer, name text, path text, primary key (hash,name,path));
 
 When querying the database, shatag will lookup the hash and count the matching paths at each location. The file will
 be considered a dupe if any location has the file more than once.

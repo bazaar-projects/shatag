@@ -18,11 +18,11 @@ class CouchStore(shatag.IStore):
     def clear(self, base='/'):
         pass
 
-    def record(self, name, path, tag):
-        self.db.save({'hash':tag, 'name':name, 'path':path})
+    def record(self, name, path, size, tag):
+        self.db.save({'hash':tag, 'size':size, 'name':name, 'path':path})
 
     def fetch(self, hash):
-        pass    
+        pass
 
     def commit(self):
         self.db.commit()

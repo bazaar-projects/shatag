@@ -21,7 +21,7 @@ def chost():
 def hashfile (filename):
     bs=4096
     sha256 = hashlib.sha256()
-    with open(filename, 'rb') as fd:    
+    with open(filename, 'rb') as fd:
         while True:
             data = fd.read(bs)
             if not data:
@@ -37,7 +37,7 @@ class IFile(object):
     """Represents an abstract checksummed file in the FS."""
     def __init__(self, filename, db=None):
         """Creates a file object. This will load the corresponding timestamp and xattrs from the filesystem."""
-        self.filename = filename 
+        self.filename = filename
         self.db = db
         self.mtime = str(os.stat(filename).st_mtime)
 
@@ -49,7 +49,7 @@ class IFile(object):
 
         if self.mtime == self.ts:
             self.state = 'good'
-        elif self.ts is None:      
+        elif self.ts is None:
             self.state = 'missing'
         else:
             self.state = 'bad'
@@ -65,9 +65,13 @@ class IFile(object):
         else:
             return self.filename
 
+    def size(self):
+        """Size of the file object"""
+        return os.path.getsize(self.filename)
+
     def update(self, **kw):
         """Rehash the file only if there is an existing, outdated hash"""
-        if self.state == 'bad': 
+        if self.state == 'bad':
             self.rehash(**kw)
 
     def tag(self, **kw):
@@ -122,11 +126,11 @@ def Store(url=None, name=None):
         url -- URL of the http store, or local filename of sqlite database
         name -- name of the local host when putting objets to store and to
                 differentiate local from remote dupes.
-        
+
         """
         if url is None:
             url = '{0}/.shatagdb'.format(os.environ['HOME'])
-    
+
         if url.startswith("http://") or url.startswith("https://") or url.startswith("insecure-https://"):
             from shatag.store.http import HTTPStore
             return HTTPStore(url, name)
@@ -143,14 +147,14 @@ def Store(url=None, name=None):
 class IStore(object):
     def __init__(self, url=None, name=None):
         if name is None:
-            name = chost()            
+            name = chost()
 
         self.name = name
         self.url = url
 
     def put(self, file):
         """add a file to the store, using the local default name"""
-        self.record(self.name, file.fullpath(), file.shatag)
+        self.record(self.name, file.fullpath(), file.size(), file.shatag)
 
     def puttree(self, base, files):
         """put a bunch of files to the store, clearing the base first"""
@@ -167,14 +171,14 @@ class IStore(object):
             raise NoChecksum()
 
         for (name, path) in self.fetch(file.shatag):
-        
+
             if ((remotenames is None and name != self.name) or
                (remotenames is not None and name in remotenames)):
                     remote.append((name,path))
             elif path != file.fullpath():
                 local.append((name,path))
 
-        return StoreResult(file, remote, local) 
+        return StoreResult(file, remote, local)
 
 
 class SQLStore(IStore):
@@ -193,10 +197,10 @@ class SQLStore(IStore):
             base = base + '/'
         self.cursor.execute('delete from contents where name = :name and substr(path,1,length(:base)) like :base', {'name': name, 'base': base})
         return self.cursor.rowcount
-    
+
     def record(self, name, path, tag):
         self.cursor.execute('delete from contents where name = ? and path = ?', (name, path))
-        self.cursor.execute('insert into contents(hash,name,path) values(?,?,?)', (tag, name, path))
+        self.cursor.execute('insert into contents(hash,size,name,path) values(?,?,?,?)', (tag, size, name, path))
 
     def fetch(self,hash):
         self.cursor.execute('select name,path from contents where hash=?', (hash,))
@@ -225,7 +229,7 @@ class StoreResult(object):
         prefix = '\x1b[33;1m- '
         # sha256 of empty file
         if self.file.shatag == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855':
-            prefix = '\x1b[35;1m* ' 
+            prefix = '\x1b[35;1m* '
         elif self.status == 2:
             prefix = '\x1b[31;1m+ '
         elif self.status == 1:
@@ -253,7 +257,7 @@ class Config(object):
         except IOError as e:
             pass
 
-      
+
 def backend(name):
     """Create a Backend object. A backend is an abstraction for local tag storage, that may
     not have a fast way of locating files with identical hashes, but is fast to query on a per-file basis.

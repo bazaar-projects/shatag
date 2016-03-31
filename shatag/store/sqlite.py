@@ -16,12 +16,13 @@ class LocalStore(shatag.base.SQLStore):
         super().__init__(url, name)
 
         try:
-            cursor.execute('create table contents(hash text, name text, path text, primary key(name,path))')
-            cursor.execute('create index contents_hash on contents(hash)')
+            cursor.execute(
+                'create table contents(hash text, size integer, name text, path text, primary key(name,path))')
+            cursor.execute( 'create index contents_hash on contents(hash)')
         except sqlite3.OperationalError as e:
             pass #table already created
 
-    def record(self, name, path, tag):
-        self.cursor.execute('insert or replace into contents(hash,name,path) values (?,?,?)', (tag,name,path))
+    def record(self, name, path, size, tag):
+        self.cursor.execute('insert or replace into contents(hash, size, name,path) values (?, ?, ?, ?)', (tag, size, name, path))
 
 

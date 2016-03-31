@@ -13,7 +13,7 @@ class HTTPStore(shatag.base.IStore):
         if url.startswith('insecure-https://'):
             url = url[9:]
             verify=False
-		
+
         super(HTTPStore,self).__init__(url, name)
         self.session = requests.session(verify=verify)
         self.buffer = []
@@ -36,9 +36,9 @@ class HTTPStore(shatag.base.IStore):
         if name != self.name:
             raise Exception("Store name {0} != {1}".format(name,self.name))
 
-    def record(self,name,path,hash):
+    def record(self,name,path,size,hash):
         self.checkname(name)
-        self.buffer.append({'path':path, 'hash':hash})
+        self.buffer.append({'path':path, 'size':size, 'hash':hash})
 
     def clear(self,base,name=None):
         if name is not None:

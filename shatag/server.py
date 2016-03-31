@@ -34,5 +34,5 @@ class ShatagServer(bottle.Bottle):
                 if 'clear' in item:
                     self.shatag_store.clear(item['clear'],name)
                 elif 'path' in item:
-                    self.shatag_store.record(name,item['path'],item['hash'])
+                    self.shatag_store.record(name,item['path'],item['size'],item['hash'])
             self.shatag_store.commit()
