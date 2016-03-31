@@ -71,7 +71,7 @@ class IFile(object):
             self.rehash(**kw)
 
     def tag(self, **kw):
-        """Rehash the file if there is an outated hash or no hash at all"""
+        """Rehash the file if there is an outdated hash or no hash at all"""
         if self.state == 'missing' or self.state == 'bad':
             self.rehash(**kw)
 
