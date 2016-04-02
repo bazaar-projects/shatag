@@ -212,6 +212,20 @@ class SQLStore(IStore):
     def rollback(self):
         self.db.rollback()
 
+class SQLDatabaseIncompatibleError(RuntimeError):
+    """Exception raised for an incompatible(outdated) version of SQL store.
+
+    Attributes:
+
+        url -- URL of the store, or local filename of sqlite database
+        message -- explanation of the error
+    """
+
+    def __init__(self, url, message):
+        self.url = url
+        self.message = message
+
+
 class StoreResult(object):
     def __init__(self,file,remote,local):
         self.file = file
