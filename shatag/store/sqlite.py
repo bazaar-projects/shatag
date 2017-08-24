@@ -52,4 +52,5 @@ sqlite store automatically. You have to start over.
 
 
     def record(self, name, path, size, tag):
+        path = path.encode('utf-8', 'surrogateescape').decode('utf-8', 'replace')
         self.cursor.execute('insert or replace into contents(hash, size, name,path) values (?, ?, ?, ?)', (tag, size, name, path))
