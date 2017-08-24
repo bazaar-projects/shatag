@@ -5,8 +5,8 @@ setup(name='shatag',
       author = 'Maxime Augier',
       author_email = 'max@xolus.net',
       url = 'http://bitbucket.org/maugier/shatag',
-      packages = ['shatag','shatag.backend','shatag.store'],
-      install_requires=['pyyaml','xattr'],
+      packages = ['shatag','shatag.backend','shatag.store','shatag.cli'],
+      install_requires=['pyyaml','xattr','pyinotify'],
       entry_points={
           'console_scripts': [
               'shatag = shatag.cli.shatag:main',
