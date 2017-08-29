@@ -9,17 +9,18 @@ import pyinotify
 import shatag
 import sys
 
+
 def main():
 
     config = shatag.Config()
 
-    parser = argparse.ArgumentParser( description='Monitors files with inotify and automatically update')
-    parser.add_argument('-u','--update', action='store_true', help='Only update already tagged files')
-    parser.add_argument('-p','--put', action='store_true', help='Send new hashes to database')
-    parser.add_argument('-v','--verbose', action='store_true', help='report missing/invalid checksums')
-    parser.add_argument('-b','--backend', metavar='BACKEND', help='backend for local tag storage', default=config.backend)
-    parser.add_argument('-r','--recursive', action='store_true', help='watch recursively')
-    parser.add_argument('-d','--daemon', action='store_true', help='daemonize')
+    parser = argparse.ArgumentParser(description='Monitors files with inotify and automatically update')
+    parser.add_argument('-u', '--update', action='store_true', help='Only update already tagged files')
+    parser.add_argument('-p', '--put', action='store_true', help='Send new hashes to database')
+    parser.add_argument('-v', '--verbose', action='store_true', help='report missing/invalid checksums')
+    parser.add_argument('-b', '--backend', metavar='BACKEND', help='backend for local tag storage', default=config.backend)
+    parser.add_argument('-r', '--recursive', action='store_true', help='watch recursively')
+    parser.add_argument('-d', '--daemon', action='store_true', help='daemonize')
 
     parser.add_argument('paths', metavar='PATH', nargs='+', help='paths to monitor')
 
@@ -29,14 +30,12 @@ def main():
     store = None
     if args.put:
         store = shatag.Store(name=config.name, url=config.database)
-        print("shatagd: updating database {0} with name {1}".format(config.database,store.name), file=sys.stderr)
-
+        print("shatagd: updating database {0} with name {1}".format(config.database, store.name), file=sys.stderr)
 
     class Handler(pyinotify.ProcessEvent):
         def process_IN_CLOSE_WRITE(self, evt):
             try:
                 file = backend.file(evt.pathname)
-
 
                 if args.update:
                     file.update()
@@ -51,10 +50,10 @@ def main():
                     store.commit()
 
             except IOError as e:
-                print ('shatagd: "{0}": IOError {1}: {2}'.format(evt.pathname, e.errno, e.strerror), file=sys.stderr)
+                print('shatagd: "{0}": IOError {1}: {2}'.format(evt.pathname, e.errno, e.strerror), file=sys.stderr)
 
             except OSError as e:
-                print ('shatagd: {0}'.format(e), file=sys.stderr)
+                print('shatagd: {0}'.format(e), file=sys.stderr)
 
     wm = pyinotify.WatchManager()
     nf = pyinotify.AsyncNotifier(wm, Handler())
@@ -66,10 +65,9 @@ def main():
         else:
             wm.add_watch(path, pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE, rec=args.recursive, auto_add=args.recursive)
 
-
     if(args.daemon):
 
-        print("Daemonizing...",file=sys.stderr)
+        print("Daemonizing...", file=sys.stderr)
         try:
             pid = os.fork()
             if pid > 0:

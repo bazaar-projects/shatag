@@ -2,8 +2,10 @@ from os import fsencode
 import shatag.base
 import xattr
 
+
 class File(shatag.base.IFile):
-    name = "Xattr store" 
+    name = "Xattr store"
+
     def read(self):
 
         try:
@@ -11,7 +13,7 @@ class File(shatag.base.IFile):
             self.shatag = xattr.getxattr(fsencode(self.filename), 'user.shatag.sha256').decode('ascii')
         except IOError as e:
             if e.errno != 61:  # no tag present
-               raise e
+                raise e
 
     def write(self):
         xattr.setxattr(fsencode(self.filename), 'user.shatag.sha256', self.shatag.encode('ascii'))
@@ -20,5 +22,6 @@ class File(shatag.base.IFile):
 
 class Backend:
     """A backend that stores the tags in POSIX extended attributes"""
-    def file(self,filename, db=None):
-        return File(filename,db)
+
+    def file(self, filename, db=None):
+        return File(filename, db)

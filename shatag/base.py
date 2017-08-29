@@ -10,16 +10,18 @@ import socket
 import sys
 import yaml
 
+
 def chost():
     hostname = socket.gethostname()
     try:
-        (canonical,aliases,addresses) = socket.gethostbyaddr(socket.gethostname())
+        (canonical, aliases, addresses) = socket.gethostbyaddr(socket.gethostname())
         return canonical
     except socket.gaierror:
         return hostname
 
-def hashfile (filename):
-    bs=4096
+
+def hashfile(filename):
+    bs = 4096
     sha256 = hashlib.sha256()
     with open(filename, 'rb') as fd:
         while True:
@@ -30,11 +32,14 @@ def hashfile (filename):
 
     return sha256.hexdigest()
 
+
 class NoChecksum(Exception):
     pass
 
+
 class IFile(object):
     """Represents an abstract checksummed file in the FS."""
+
     def __init__(self, filename, db=None):
         """Creates a file object. This will load the corresponding timestamp and xattrs from the filesystem."""
         self.filename = filename
@@ -109,7 +114,7 @@ class IFile(object):
         newsum = hashfile(self.filename)
         if self.state == 'good' and newsum != self.shatag:
             self.fsprint('<invalid>  {0}\t{1}\t{2}'.format(self.path(canonical),
-                self.shatag, newsum), file=sys.stderr)
+                                                           self.shatag, newsum), file=sys.stderr)
             if scrub:
                 return
 
@@ -119,30 +124,31 @@ class IFile(object):
 
 
 def Store(url=None, name=None):
-        """Factory to build a store. A store is an abstraction for a remote
-	database to which one can send hashes, and quickly query for alternate
-	locations with identical hashes.
-        Arguments:
-        url -- URL of the http store, or local filename of sqlite database
-        name -- name of the local host when putting objets to store and to
-                differentiate local from remote dupes.
+    """Factory to build a store. A store is an abstraction for a remote
+    database to which one can send hashes, and quickly query for alternate
+    locations with identical hashes.
+    Arguments:
+    url -- URL of the http store, or local filename of sqlite database
+    name -- name of the local host when putting objets to store and to
+            differentiate local from remote dupes.
 
-        """
-        if url is None:
-            url = '{0}/.shatagdb'.format(os.environ['HOME'])
+    """
+    if url is None:
+        url = '{0}/.shatagdb'.format(os.environ['HOME'])
 
-        if url.startswith("http://") or url.startswith("https://") or url.startswith("insecure-https://"):
-            from shatag.store.http import HTTPStore
-            return HTTPStore(url, name)
-        if url.startswith("couchdb:"):
-            from shatag.store.couchdb import CouchStore
-            return CouchStore(url, name)
-        elif url.startswith("pg:"):
-            from shatag.store.pg import PgStore
-            return PgStore(url, name)
-        else:
-            from shatag.store.sqlite import LocalStore
-            return LocalStore(url, name)
+    if url.startswith("http://") or url.startswith("https://") or url.startswith("insecure-https://"):
+        from shatag.store.http import HTTPStore
+        return HTTPStore(url, name)
+    if url.startswith("couchdb:"):
+        from shatag.store.couchdb import CouchStore
+        return CouchStore(url, name)
+    elif url.startswith("pg:"):
+        from shatag.store.pg import PgStore
+        return PgStore(url, name)
+    else:
+        from shatag.store.sqlite import LocalStore
+        return LocalStore(url, name)
+
 
 class IStore(object):
     def __init__(self, url=None, name=None):
@@ -173,10 +179,10 @@ class IStore(object):
         for (name, path) in self.fetch(file.shatag):
 
             if ((remotenames is None and name != self.name) or
-               (remotenames is not None and name in remotenames)):
-                    remote.append((name,path))
+                    (remotenames is not None and name in remotenames)):
+                remote.append((name, path))
             elif path != file.fullpath():
-                local.append((name,path))
+                local.append((name, path))
 
         return StoreResult(file, remote, local)
 
@@ -186,9 +192,9 @@ class SQLStore(IStore):
     self.db to be a valid DB-API database, and
     self.cursor to be a valid DB-API cursor.
     """
+
     def __init__(self, url=None, name=None):
         super().__init__(url, name)
-
 
     def clear(self, base='/', name=None):
         if (name is None):
@@ -202,7 +208,7 @@ class SQLStore(IStore):
         self.cursor.execute('delete from contents where name = ? and path = ?', (name, path))
         self.cursor.execute('insert into contents(hash,size,name,path) values(?,?,?,?)', (tag, size, name, path))
 
-    def fetch(self,hash):
+    def fetch(self, hash):
         self.cursor.execute('select name,path from contents where hash=?', (hash,))
         return self.cursor
 
@@ -211,6 +217,7 @@ class SQLStore(IStore):
 
     def rollback(self):
         self.db.rollback()
+
 
 class SQLDatabaseIncompatibleError(RuntimeError):
     """Exception raised for an incompatible(outdated) version of SQL store.
@@ -227,7 +234,7 @@ class SQLDatabaseIncompatibleError(RuntimeError):
 
 
 class StoreResult(object):
-    def __init__(self,file,remote,local):
+    def __init__(self, file, remote, local):
         self.file = file
         self.remote = remote
         self.local = local
@@ -251,6 +258,7 @@ class StoreResult(object):
 
         return prefix + self.file.filename + "\x1b[0m"
 
+
 class Config(object):
     def __init__(self):
 
@@ -260,7 +268,7 @@ class Config(object):
         self.backend = 'xattr'
 
         try:
-            with open('{0}/.shatagrc'.format(os.environ['HOME']),'r') as f:
+            with open('{0}/.shatagrc'.format(os.environ['HOME']), 'r') as f:
                 d = yaml.load(f)
                 if 'database' in d:
                     self.database = d['database']
@@ -277,4 +285,3 @@ def backend(name):
     not have a fast way of locating files with identical hashes, but is fast to query on a per-file basis.
     """
     return __import__('shatag.backend.{0}'.format(name), globals(), locals(), ['Backend'], 0).Backend()
-

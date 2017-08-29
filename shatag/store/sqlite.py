@@ -18,7 +18,6 @@ class LocalStore(shatag.base.SQLStore):
 
         super().__init__(url, name)
 
-
         try:
             cursor.execute(
                 'create table contents(hash text, size integer, name text, path text, primary key(name,path))')
@@ -49,7 +48,6 @@ sqlite store automatically. You have to start over.
                 # As defined in `sysexits.h`:
                 #       #define EX_DATAERR      65      /* data format error */
                 sys.exit(65)
-
 
     def record(self, name, path, size, tag):
         path = path.encode('utf-8', 'surrogateescape').decode('utf-8', 'replace')

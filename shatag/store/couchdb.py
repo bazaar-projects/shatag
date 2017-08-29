@@ -9,17 +9,16 @@ import couchdb
 class CouchStore(shatag.IStore):
 
     def __init__(self, url=None, name=None):
-        super(CouchStore,self).__init__(url, name)
+        super(CouchStore, self).__init__(url, name)
 
         server = couchdb.Server(url)
         self.db = server['shatag']
-
 
     def clear(self, base='/'):
         pass
 
     def record(self, name, path, size, tag):
-        self.db.save({'hash':tag, 'size':size, 'name':name, 'path':path})
+        self.db.save({'hash': tag, 'size': size, 'name': name, 'path': path})
 
     def fetch(self, hash):
         pass
@@ -29,4 +28,3 @@ class CouchStore(shatag.IStore):
 
     def rollback(self):
         self.db.rollback()
-

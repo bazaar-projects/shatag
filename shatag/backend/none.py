@@ -1,5 +1,6 @@
 import shatag.base
 
+
 class File(shatag.base.IFile):
 
     def read(self):
@@ -12,5 +13,6 @@ class File(shatag.base.IFile):
 
 class Backend:
     """A stub backend that does not store tags and recomputes them each time."""
-    def file(self,filename, db=None):
-        return File(filename,db)
+
+    def file(self, filename, db=None):
+        return File(filename, db)

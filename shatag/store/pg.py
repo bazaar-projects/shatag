@@ -10,6 +10,7 @@ from shatag.base import SQLDatabaseIncompatibleError
 
 class PgStore(shatag.base.SQLStore):
     """A postgresql store using psycopg2."""
+
     def __init__(self, url=None, name=None):
         db = psycopg2.connect(url[3:])
         self.db = db
@@ -17,7 +18,7 @@ class PgStore(shatag.base.SQLStore):
         cursor = db.cursor()
         self.cursor = cursor
 
-        super(PgStore,self).__init__(url, name)
+        super(PgStore, self).__init__(url, name)
 
         try:
             cursor.execute(
@@ -54,21 +55,18 @@ sqlite store automatically. You have to start over.
 
             db.rollback()
 
-
     # reimplementing these because psycopg2 does not handle classic placeholders correctly
-    def clear(self, base='/',name=None):
+    def clear(self, base='/', name=None):
         if name is None:
             name = self.name
         self.cursor.execute('delete from contents where name = %(name)s and substr(path,1,length(%(base)s)) like %(base)s', {'name': name, 'base': base})
         return self.cursor.rowcount
 
-
     def record(self, name, path, size, tag):
-        d = {'name': name, 'path': path, 'size': size, 'tag':tag }
+        d = {'name': name, 'path': path, 'size': size, 'tag': tag}
         self.cursor.execute('delete from contents where name = %(name)s and path = %(path)s', d)
         self.cursor.execute('insert into contents(hash,size,name,path) values(%(tag)s,%(size)s,%(name)s,%(path)s)', d)
 
-    def fetch(self,hash):
-        self.cursor.execute('select name,path from contents where hash = %(hash)s', {'hash':hash})
+    def fetch(self, hash):
+        self.cursor.execute('select name,path from contents where hash = %(hash)s', {'hash': hash})
         return self.cursor
-

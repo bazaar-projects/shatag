@@ -6,41 +6,42 @@ import requests
 import json
 import shatag.base
 
+
 class HTTPStore(shatag.base.IStore):
-    def __init__(self,url,name):
-        verify=True
+    def __init__(self, url, name):
+        verify = True
 
         if url.startswith('insecure-https://'):
             url = url[9:]
-            verify=False
+            verify = False
 
-        super(HTTPStore,self).__init__(url, name)
+        super(HTTPStore, self).__init__(url, name)
         self.session = requests.session(verify=verify)
         self.buffer = []
         try:
             version = self.get(url)['shatag-version']
             if version != '1':
-                raise Exception('Configured URL uses incompatible protocol version {0}: {1}'.format(version,url))
+                raise Exception('Configured URL uses incompatible protocol version {0}: {1}'.format(version, url))
         except:
             raise Exception('Configured URL does not answer like a shatag endpoint: {0}'.format(url))
 
-    def get(self,url):
+    def get(self, url):
         return json.loads(self.session.get(url, prefetch=True).text)
 
-    def fetch(self,hash):
+    def fetch(self, hash):
         data = self.get(self.url + '/find/' + hash)
         for item in data[hash]:
             yield (item['host'], item['file'])
 
-    def checkname(self,name):
+    def checkname(self, name):
         if name != self.name:
-            raise Exception("Store name {0} != {1}".format(name,self.name))
+            raise Exception("Store name {0} != {1}".format(name, self.name))
 
-    def record(self,name,path,size,hash):
+    def record(self, name, path, size, hash):
         self.checkname(name)
-        self.buffer.append({'path':path, 'size':size, 'hash':hash})
+        self.buffer.append({'path': path, 'size': size, 'hash': hash})
 
-    def clear(self,base,name=None):
+    def clear(self, base, name=None):
         if name is not None:
             self.checkname(name)
         self.buffer.append({'clear': base})
@@ -51,5 +52,3 @@ class HTTPStore(shatag.base.IStore):
 
     def rollback(self):
         self.buffer = []
-
-

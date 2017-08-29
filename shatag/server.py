@@ -3,12 +3,15 @@ import bottle
 import json
 from io import TextIOWrapper
 
+
 def parse(r):
-    encoding = 'utf-8'  #todo: get encoding from headers
+    encoding = 'utf-8'  # todo: get encoding from headers
     return json.load(TextIOWrapper(r.body, encoding=encoding))
+
 
 class ShatagServer(bottle.Bottle):
     """A Bottle server that exposes a store trough a restful JSON-based API."""
+
     def __init__(self, store=None):
         super(ShatagServer, self).__init__()
         if store is None:
@@ -21,18 +24,18 @@ class ShatagServer(bottle.Bottle):
 
         @self.get('/find/<hash:re:[a-f0-9]+>')
         def find(hash):
-            return {hash: [{'host':h, 'file':f} for (h,f) in self.shatag_store.fetch(hash)]}
+            return {hash: [{'host': h, 'file': f} for (h, f) in self.shatag_store.fetch(hash)]}
 
         @self.get('/where/<hash:re:[a-f0-9]+>')
         def where(hash):
-            return {hash: [h for (h,f) in self.shatag_store.fetch(hash)]}
+            return {hash: [h for (h, f) in self.shatag_store.fetch(hash)]}
 
         @self.post('/host/<name:re:[a-z0-9.]+>')
         def host(name):
             blob = parse(bottle.request)
             for item in blob:
                 if 'clear' in item:
-                    self.shatag_store.clear(item['clear'],name)
+                    self.shatag_store.clear(item['clear'], name)
                 elif 'path' in item:
-                    self.shatag_store.record(name,item['path'],item['size'],item['hash'])
+                    self.shatag_store.record(name, item['path'], item['size'], item['hash'])
             self.shatag_store.commit()
